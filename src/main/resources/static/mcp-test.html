@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Server 测试客户端</title>
+    <style>
+        /* 页面整体样式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* 标题样式 */
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            color: rgba(255,255,255,0.9);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        /* 卡片样式 */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .card h2 {
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(235, 51, 73, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* 输入框样式 */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .input-group label {
+            display: block;
+            color: #555;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        /* 日志区域样式 */
+        .log-container {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        
+        .log-info {
+            color: #4fc3f7;
+            background: rgba(79, 195, 247, 0.1);
+        }
+        
+        .log-success {
+            color: #81c784;
+            background: rgba(129, 199, 132, 0.1);
+        }
+        
+        .log-error {
+            color: #ef5350;
+            background: rgba(239, 83, 80, 0.1);
+        }
+        
+        .log-data {
+            color: #fff59d;
+            background: rgba(255, 245, 157, 0.1);
+        }
+        
+        /* 状态指示器 */
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        
+        .status-connected {
+            background: rgba(129, 199, 132, 0.2);
+            color: #4caf50;
+        }
+        
+        .status-connected .status-dot {
+            background: #4caf50;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-disconnected {
+            background: rgba(239, 83, 80, 0.2);
+            color: #ef5350;
+        }
+        
+        .status-disconnected .status-dot {
+            background: #ef5350;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* 工具按钮组 */
+        .tool-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8em; }
+            .btn { padding: 10px 18px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 MCP Server 测试客户端</h1>
+        <p class="subtitle">Model Context Protocol - 让AI能够调用你的工具</p>
+        
+        <!-- 连接控制 -->
+        <div class="card">
+            <h2>📡 连接控制</h2>
+            <div id="status" class="status status-disconnected">
+                <span class="status-dot"></span>
+                <span>未连接</span>
+            </div>
+            <div>
+                <button id="connectBtn" class="btn btn-primary" onclick="connect()">
+                    🔗 连接到 MCP Server
+                </button>
+                <button id="disconnectBtn" class="btn btn-danger" onclick="disconnect()" disabled>
+                    ❌ 断开连接
+                </button>
+            </div>
+        </div>
+        
+        <!-- MCP操作 -->
+        <div class="card">
+            <h2>🛠️ MCP 操作</h2>
+            <p style="color: #666; margin-bottom: 15px;">
+                按照MCP协议的"四步骤"进行操作：连 → 取 → 握 → 用
+            </p>
+            
+            <div class="tool-buttons">
+                <button id="initBtn" class="btn btn-success" onclick="sendInitialize()" disabled>
+                    🤝 Step 3: Initialize (握手)
+                </button>
+                <button id="listToolsBtn" class="btn btn-success" onclick="sendListTools()" disabled>
+                    📋 Step 4a: List Tools
+                </button>
+            </div>
+            
+            <hr style="margin: 20px 0; border: 1px solid #eee;">
+            
+            <h3 style="margin-bottom: 15px; color: #555;">🔧 调用工具 (Step 4b: Call Tool)</h3>
+            
+            <!-- Hello World 工具 -->
+            <div class="input-group">
+                <div style="flex: 1;">
+                    <label>hello_world 工具</label>
+                    <input type="text" id="helloName" placeholder="输入名字（可选）">
+                </div>
+                <button class="btn btn-primary" onclick="callHelloWorld()" id="helloBtn" disabled>
+                    👋 Say Hello
+                </button>
+            </div>
+            
+            <!-- Get Time 工具 -->
+            <div class="input-group">
+                <div style="flex: 1;">
+                    <label>get_time 工具</label>
+                    <span style="color: #888;">（无需参数）</span>
+                </div>
+                <button class="btn btn-primary" onclick="callGetTime()" id="timeBtn" disabled>
+                    ⏰ Get Time
+                </button>
+            </div>
+            
+            <!-- Echo 工具 -->
+            <div class="input-group">
+                <div style="flex: 1;">
+                    <label>echo 工具</label>
+                    <input type="text" id="echoMessage" placeholder="输入要回显的消息">
+                </div>
+                <button class="btn btn-primary" onclick="callEcho()" id="echoBtn" disabled>
+                    📢 Echo
+                </button>
+            </div>
+        </div>
+        
+        <!-- 日志输出 -->
+        <div class="card">
+            <h2>📜 通信日志</h2>
+            <button class="btn btn-danger" onclick="clearLog()" style="margin-bottom: 15px;">
+                🗑️ 清空日志
+            </button>
+            <div id="log" class="log-container">
+                <div class="log-entry log-info">欢迎使用 MCP Server 测试客户端！</div>
+                <div class="log-entry log-info">点击"连接到 MCP Server"开始测试</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // MCP 客户端实现
+        // ==========================================
+        
+        /**
+         * 全局变量
+         */
+        let eventSource = null;  // SSE连接对象
+        let messageEndpoint = null;  // POST端点URL
+        let requestId = 0;  // 请求ID计数器
+        let isConnected = false;  // 连接状态
+        
+        /**
+         * 添加日志到页面
+         * @param {string} message 日志消息
+         * @param {string} type 日志类型 (info/success/error/data)
+         */
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            
+            // 添加时间戳
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        /**
+         * 清空日志
+         */
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            log('日志已清空', 'info');
+        }
+        
+        /**
+         * 更新连接状态UI
+         * @param {boolean} connected 是否已连接
+         */
+        function updateConnectionStatus(connected) {
+            isConnected = connected;
+            const status = document.getElementById('status');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            
+            // 更新按钮状态
+            if (connected) {
+                status.className = 'status status-connected';
+                status.innerHTML = '<span class="status-dot"></span><span>已连接</span>';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                
+                // 启用初始化按钮
+                document.getElementById('initBtn').disabled = false;
+            } else {
+                status.className = 'status status-disconnected';
+                status.innerHTML = '<span class="status-dot"></span><span>未连接</span>';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                
+                // 禁用所有操作按钮
+                document.getElementById('initBtn').disabled = true;
+                document.getElementById('listToolsBtn').disabled = true;
+                document.getElementById('helloBtn').disabled = true;
+                document.getElementById('timeBtn').disabled = true;
+                document.getElementById('echoBtn').disabled = true;
+            }
+        }
+        
+        /**
+         * 启用工具按钮（初始化完成后调用）
+         */
+        function enableToolButtons() {
+            document.getElementById('listToolsBtn').disabled = false;
+            document.getElementById('helloBtn').disabled = false;
+            document.getElementById('timeBtn').disabled = false;
+            document.getElementById('echoBtn').disabled = false;
+        }
+        
+        // ==========================================
+        // MCP 协议实现
+        // ==========================================
+        
+        /**
+         * 【步骤1&2：连接到MCP Server】
+         * 
+         * 这实现了MCP协议的前两步：
+         * 1. 连 - 建立SSE长连接
+         * 2. 取 - 获取POST端点地址
+         */
+        function connect() {
+            log('正在连接到 MCP Server...', 'info');
+            log('【MCP步骤1：连】建立SSE连接', 'info');
+            
+            // 创建EventSource连接到SSE端点
+            // 这是浏览器原生支持的SSE API
+            eventSource = new EventSource('/sse');
+            
+            // 监听 endpoint 事件
+            // 这是MCP协议规定的，服务器会发送POST端点地址
+            eventSource.addEventListener('endpoint', function(event) {
+                messageEndpoint = event.data;
+                log('【MCP步骤2：取】收到POST端点: ' + messageEndpoint, 'success');
+                updateConnectionStatus(true);
+            });
+            
+            // 监听 message 事件
+            // 这是服务器返回的响应
+            eventSource.addEventListener('message', function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    log('收到响应: ' + JSON.stringify(data, null, 2), 'data');
+                    
+                    // 处理响应
+                    handleResponse(data);
+                } catch (e) {
+                    log('收到消息: ' + event.data, 'data');
+                }
+            });
+            
+            // 监听心跳事件
+            eventSource.addEventListener('ping', function(event) {
+                // 心跳事件，保持连接活跃
+                console.log('Received ping');
+            });
+            
+            // 监听连接打开
+            eventSource.onopen = function() {
+                log('SSE连接已建立', 'success');
+            };
+            
+            // 监听错误
+            eventSource.onerror = function(error) {
+                log('SSE连接错误: ' + (error.message || '未知错误'), 'error');
+                updateConnectionStatus(false);
+            };
+        }
+        
+        /**
+         * 断开连接
+         */
+        function disconnect() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+                messageEndpoint = null;
+                log('已断开连接', 'info');
+                updateConnectionStatus(false);
+            }
+        }
+        
+        /**
+         * 发送JSON-RPC请求到MCP Server
+         * 
+         * @param {string} method 方法名
+         * @param {object} params 参数
+         */
+        async function sendRequest(method, params = {}) {
+            if (!messageEndpoint) {
+                log('错误：未连接到服务器', 'error');
+                return;
+            }
+            
+            // 构造JSON-RPC 2.0请求
+            const request = {
+                jsonrpc: '2.0',
+                method: method,
+                params: params,
+                id: String(requestId++)
+            };
+            
+            log('发送请求: ' + JSON.stringify(request), 'info');
+            
+            try {
+                // 发送POST请求
+                const response = await fetch(messageEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(request)
+                });
+                
+                if (!response.ok) {
+                    log('HTTP错误: ' + response.status, 'error');
+                }
+            } catch (error) {
+                log('发送失败: ' + error.message, 'error');
+            }
+        }
+        
+        /**
+         * 处理服务器响应
+         * @param {object} data 响应数据
+         */
+        function handleResponse(data) {
+            // 检查是否是初始化响应
+            if (data.result && data.result.serverInfo) {
+                log('✅ 【MCP步骤3：握手成功】服务器: ' + data.result.serverInfo.name, 'success');
+                enableToolButtons();
+            }
+            
+            // 检查是否是工具列表响应
+            if (data.result && data.result.tools) {
+                log('📋 获取到 ' + data.result.tools.length + ' 个工具', 'success');
+                data.result.tools.forEach(tool => {
+                    log('  - ' + tool.name + ': ' + tool.description, 'info');
+                });
+            }
+            
+            // 检查是否是工具调用响应
+            if (data.result && data.result.content) {
+                const content = data.result.content[0];
+                if (content && content.text) {
+                    log('🔧 工具执行结果: ' + content.text, 'success');
+                }
+            }
+            
+            // 检查错误
+            if (data.error) {
+                log('❌ 错误: ' + data.error.message, 'error');
+            }
+        }
+        
+        // ==========================================
+        // MCP 操作函数
+        // ==========================================
+        
+        /**
+         * 【步骤3：握手】发送 initialize 请求
+         */
+        function sendInitialize() {
+            log('【MCP步骤3：握】发送初始化请求', 'info');
+            sendRequest('initialize', {
+                protocolVersion: '2024-11-05',
+                capabilities: {},
+                clientInfo: {
+                    name: 'MCP Test Client',
+                    version: '1.0.0'
+                }
+            });
+            
+            // 发送初始化完成通知
+            setTimeout(() => {
+                sendRequest('notifications/initialized', {});
+                log('发送 notifications/initialized 通知', 'info');
+            }, 500);
+        }
+        
+        /**
+         * 【步骤4】列出可用工具
+         */
+        function sendListTools() {
+            log('【MCP步骤4：用】获取工具列表', 'info');
+            sendRequest('tools/list', {});
+        }
+        
+        /**
+         * 调用 hello_world 工具
+         */
+        function callHelloWorld() {
+            const name = document.getElementById('helloName').value;
+            log('调用 hello_world 工具' + (name ? ', 参数: ' + name : ''), 'info');
+            sendRequest('tools/call', {
+                name: 'hello_world',
+                arguments: name ? { name: name } : {}
+            });
+        }
+        
+        /**
+         * 调用 get_time 工具
+         */
+        function callGetTime() {
+            log('调用 get_time 工具', 'info');
+            sendRequest('tools/call', {
+                name: 'get_time',
+                arguments: {}
+            });
+        }
+        
+        /**
+         * 调用 echo 工具
+         */
+        function callEcho() {
+            const message = document.getElementById('echoMessage').value;
+            if (!message) {
+                log('请输入要回显的消息', 'error');
+                return;
+            }
+            log('调用 echo 工具, 参数: ' + message, 'info');
+            sendRequest('tools/call', {
+                name: 'echo',
+                arguments: { message: message }
+            });
+        }
+        
+        // 页面关闭时断开连接
+        window.addEventListener('beforeunload', function() {
+            if (eventSource) {
+                eventSource.close();
+            }
+        });
+    </script>
+</body>
+</html>

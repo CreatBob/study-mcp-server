@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- 
+        项目基本信息
+        这是一个基于Spring Boot的MCP Server实现
+        MCP (Model Context Protocol) 是规范应用程序向大语言模型提供上下文的开放协议
+    -->
+    <groupId>com.example</groupId>
+    <artifactId>springboot-mcp-server</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    <name>SpringBoot MCP Server</name>
+    <description>一个基于Spring Boot WebFlux实现的MCP Server示例</description>
+
+    <!-- 
+        继承Spring Boot父项目
+        这样可以自动管理Spring Boot相关依赖的版本
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.0</version>
+        <relativePath/>
+    </parent>
+
+    <properties>
+        <!-- Java版本设置 -->
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <!-- 
+            Spring Boot WebFlux Starter
+            【核心依赖】用于实现响应式Web应用
+            
+            为什么选择WebFlux而不是传统的Spring MVC？
+            - WebFlux支持响应式编程，可以更高效地处理SSE（Server-Sent Events）
+            - MCP协议需要服务端向客户端实时推送数据，WebFlux的Flux非常适合这种场景
+            - 使用Flux<ServerSentEvent>可以方便地实现SSE流
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <!-- 
+            Jackson JSON处理库
+            【核心依赖】用于JSON序列化和反序列化
+            
+            MCP协议使用JSON-RPC 2.0格式进行通信
+            所有请求和响应都是JSON格式，需要Jackson来处理
+        -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <!-- 
+            Lombok - 简化Java代码
+            可选依赖，用于减少样板代码（getter/setter等）
+        -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- 
+            Spring Boot Test Starter
+            用于单元测试和集成测试
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 
+            Reactor Test
+            用于测试响应式代码
+        -->
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- 
+                Spring Boot Maven插件
+                用于打包可执行的JAR文件
+            -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
