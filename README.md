@@ -1,5 +1,7 @@
 # SpringBoot MCP Server 示例
 
+[English](./README_EN.md) | 中文
+
 这是一个基于Spring Boot WebFlux实现的MCP (Model Context Protocol) Server示例项目。
 
 ## 📖 什么是MCP？
